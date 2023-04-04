@@ -7,15 +7,78 @@
 </head>
 <body>
 
-  <div class="wrapper">
-    <video class="flex" width="765" height="430" src="http://clips.vorwaerts-gmbh.de/VfE_html5.mp4" controls></video>
-    <div class="speed">
-      <div class="speed-bar">1×</div>
+ <div class="wrapper">
+  <video class="player" width="765" height="430" src="http://clips.vorwaerts-gmbh.de/VfE_html5.mp4"></video>
+  <div class="controls">
+    <div class="progress">
+      <div class="progress__filled"></div>
     </div>
+    <button class="player__button" title="Toggle Play">►</button>
+    <input type="range" name="volume" class="player__slider" min="0" max="1" step="0.05" value="1">
+    <input type="range" name="playbackRate" class="player__slider" min="0.5" max="2" step="0.1" value="1">
+    <button data-skip="-10" class="player__button">« 10s</button>
+    <button data-skip="25" class="player__button">25s »</button>
   </div>
+</div>
+
 
 <script  src="./script.js">
   //Your code goes here
+  // Get the elements
+const player = document.querySelector('.player');
+const progress = document.querySelector('.progress');
+const progressBar = document.querySelector('.progress__filled');
+const toggle = document.querySelector('.player__button');
+const skipButtons = document.querySelectorAll('[data-skip]');
+const ranges = document.querySelectorAll('.player__slider');
+
+// Build out functions
+function togglePlay() {
+  if (player.paused) {
+    player.play();
+  } else {
+    player.pause();
+  }
+}
+
+function updateButton() {
+  const icon = this.paused ? '►' : '❚ ❚';
+  toggle.textContent = icon;
+}
+
+function skip() {
+  player.currentTime += parseFloat(this.dataset.skip);
+}
+
+function handleRangeUpdate() {
+  player[this.name] = this.value;
+}
+
+function handleProgress() {
+  const percent = (player.currentTime / player.duration) * 100;
+  progressBar.style.flexBasis = `${percent}%`;
+}
+
+function scrub(e) {
+  const scrubTime = (e.offsetX / progress.offsetWidth) * player.duration;
+  player.currentTime = scrubTime;
+}
+
+// Hook up the event listeners
+player.addEventListener('click', togglePlay);
+toggle.addEventListener('click', togglePlay);
+player.addEventListener('play', updateButton);
+player.addEventListener('pause', updateButton);
+player.addEventListener('timeupdate', handleProgress);
+skipButtons.forEach(button => button.addEventListener('click', skip));
+ranges.forEach(range => range.addEventListener('change', handleRangeUpdate));
+ranges.forEach(range => range.addEventListener('mousemove', handleRangeUpdate));
+let mousedown = false;
+progress.addEventListener('click', scrub);
+progress.addEventListener('mousemove', (e) => mousedown && scrub(e));
+progress.addEventListener('mousedown', () => mousedown = true);
+progress.addEventListener('mouseup', () => mousedown = false);
+
 </script>
 </body>
 </html>
